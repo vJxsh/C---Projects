@@ -1,0 +1,1462 @@
+#vJ_sh
+#include <stdio.h>
+#include <stdlib.h>                  // para sa system clear screen
+#include <string.h>                  // for strcmp (string compare) og katung para remove sa next line ('\n')
+
+#define IDSize 7                     // pwede i edit pilay characters para sa ID sa product   // minimum kay 7 (dapat i consider nga mag - og 2, dala sa \n sa every ID)
+#define NameLimit 25                 // pwede i edit pilay characters para sa Name sa product // minimum kay 25
+#define NumberOfAttempts 3           // number of attempts para sa password system
+#define PasswordLength 18            // Maximum password length
+
+void Menu();
+
+struct product
+{
+    char id[IDSize]; //ID for each product
+    char name[NameLimit]; // Name of product
+    float price; // Price of each product
+    int quantity; // Amount of product that is available in inventory stock
+};
+
+    struct product p[999];// p = product, you can increase the amount of products to be displayed by changing the amount of bytes to be allocatedd
+    int countp = 0; // number of products
+
+    FILE *inventory; // kapoy sige declare sulod sa mga function
+    FILE *passwords; // check file for passwords
+    FILE *tempcashierdisplay; // wala ko kahibaw unsay i pangan
+
+
+int countproducts()
+{
+    inventory = fopen("inventory.txt", "r");
+
+    char line[499]; // minimum kay 100+
+
+    if (inventory == NULL)
+    {
+        printf("file not found..");
+    } else
+        {
+            while(fgets(line, sizeof(line), inventory) != NULL)
+            {
+                if (strlen(line) > 1) // security
+                {
+                    countp++; // every line nga mabasa kay mo increment
+                }
+            }
+        }
+    return countp / 4; // kay ang struct naa may upat ka members i divide by 4
+}
+
+int readfile() // i load ang mga products
+{
+    int n = countp; // gi declare sa main function
+
+    inventory = fopen("inventory.txt", "r");
+
+    if (inventory == NULL)
+    {
+        printf("file not found...");
+        return -1;
+    } else
+    {
+    for (int i = 0; i < n; i++)
+        {
+            fgets(p[i].id, sizeof(p[i].id), inventory);
+            p[i].id[strlen(p[i].id) - 1] = 0; // remove new lines, pls dont remove, it will colapse the list
+
+            fgets(p[i].name, sizeof(p[i].name), inventory);
+            p[i].name[strlen(p[i].name)-1] = 0; // remove new lines
+
+            fscanf(inventory, "%f", &p[i].price); // get info for prices of each product from inventory
+            fscanf(inventory, "%d", &p[i].quantity);  // get info for available stock of each product from inventory
+            fgetc(inventory); // kani nga part i arrange ang listahan, labad na ako ulo pun an ra diay ani
+        }
+    }
+    fclose(inventory);
+    return n; // after counting will return the amount of products it counted
+}
+
+void writefile()
+{
+    inventory = fopen("inventory.txt", "w"); // Instead nga mag append, i write file, reason kay tungod sa readfile() function una ang gipa gana
+        if (inventory == NULL)
+        {
+            printf("Error opening file for writing");
+        }
+        for (int i = 0; i < countp; i++)
+        {
+            if (strlen(p[i].id) > 0)
+            {
+                fprintf(inventory, "%s\n", p[i].id);
+                fprintf(inventory, "%s\n", p[i].name);
+                fprintf(inventory, "%.2f\n", p[i].price);
+                fprintf(inventory, "%d\n", p[i].quantity);
+            }
+        }
+    fclose(inventory);
+}
+void CheckInputError(int n) // i check if integer ang gi input, kay sige og loop kung dile integer samok kaau
+{
+    if (n != 1)
+    {
+        while(getchar() != '\n');
+    }
+}
+
+void PressEnter() // para press ra enter
+{
+    char buffer;
+    printf("\nPress [Enter] to Continue\n");
+
+    buffer = getchar();
+    printf("%c", buffer);
+}
+
+void info()
+{
+    printf("\t\t------------------------------------------------------------------------------------------------\n");
+    printf("\t\tID\t\t     NAME\t          \t\tPRICE\t\t\t\tQUANTITY\n");
+    printf("\t\t------------------------------------------------------------------------------------------------\n");
+}
+
+int addproduct()
+{
+    void ReadInventory();
+    int IDchecker(int compare, char inputID[]);
+    int Namechecker(int compare, char inputname[]);
+
+    countp = readfile();
+    char inputID[IDSize];
+    char inputname [NameLimit];
+    int compare = 0;
+
+    printf("\n\n\n");
+    printf("\t\t\t            AAA        DDDDDDDD     DDDDDDDD             \n");
+    printf("\t\t\t           AA AA       DD    DDD    DD    DDD            \n");
+    printf("\t\t\t          AA   AA      DD     DD    DD     DD            \n");
+    printf("\t\t\t         AA AAA AA     DD    DDD    DD    DDD            \n");
+    printf("\t\t\t        AA       AA    DDDDDDDD     DDDDDDDD             \n\n\n");
+    printf("\t\t=====================================================================\n");
+
+    inventory = fopen("inventory.txt", "a"); // append, dile i write file
+
+    if (inventory == NULL)
+    {
+        printf("File not found...\n");
+    }else
+    {
+        for (int i = 0; i < 1; i++)
+        {
+            printf("\nEnter Zero / [ 0 ] to Exit Process...\t\t\t\t\t");
+            printf("\nEnter One / [ 1 ] to Shortcut to Inventory...\n");
+            printf("\nEnter Designated ID for Product: ");
+            fgets(inputID, sizeof(inputID), stdin);
+            inputID[strcspn(inputID, "\n")] = 0; // Remove newline character
+
+            if (strcmp(inputID, "1") == 0)
+            {
+                system("cls");
+                ReadInventory();
+                return 0;
+            }else if (strcmp(inputID, "0") == 0)
+            {
+                Menu();
+                return 0;
+            }
+
+            compare = IDchecker(compare, inputID);
+
+                if (compare == 1)
+                {
+                    break;
+                }
+
+                if (strlen(inputID) == IDSize - 2)
+                {
+                    strcpy(p[i].id, inputID); // i copy ang unsa gi input sa first part para i save
+
+                    printf("\nEnter Name of Product: ");
+                    fgets(inputname, sizeof(inputname), stdin);
+                    inputname[strcspn(inputname, "\n")] = 0; // Remove newline character
+                    fflush(stdin);
+
+                    compare = Namechecker(compare, inputname);
+
+                    if (compare == 1)
+                    {
+                    break;
+                    }
+                        if (strcasecmp(inputname, p[i].name) == 0)
+                        {
+                            printf("This Product name is already assigned to ID : [ %s ] ", p[i].id);
+                        }else
+                        {
+                            strcpy(p[i].name, inputname);
+
+                            printf("\nEnter Price of each Product: ");
+                            scanf("%f", &p[i].price);
+
+                            printf("\nEnter Quantity of Product to be Stored: ");
+                            scanf("%d", &p[i].quantity);
+
+                            if (p[i].price < 0 || p[i].quantity < 0)
+                            {
+                                system("cls");
+                                printf("\nPlease Enter a positive value, not [ - ], sincerely Admin\n");
+                                PressEnter();
+                            }else
+                            {
+                                int confirmchoice;
+
+                                printf("Are you sure to Add Product to inventory?\n");
+                                info();
+                                printf("\t\t%-10s\t     %-20s\t\t%-10.2f\t\t\t%-10d\n", p[i].id, p[i].name, p[i].price, p[i].quantity);
+                                printf("\n\n[1] Yes\t [2] No : \n");
+                                scanf("%d", &confirmchoice);
+
+                                if (confirmchoice == 1)
+                                {
+                                    // Save to inventory file
+                                    fprintf(inventory, "%s\n", p[i].id);
+                                    fprintf(inventory, "%s\n", p[i].name);
+                                    fprintf(inventory, "%.2f\n", p[i].price);
+                                    fprintf(inventory, "%d\n", p[i].quantity);
+
+                                    countp++; // increment by 1 sa countp
+                                    system("cls");
+                                    printf("\n\nProduct added successfully\n\n");
+
+                                } else
+                                {
+                                    system("cls");
+                                    printf("\n\nProduct not added to Inventory\n\n");
+                                }
+                            }
+                        }
+                    }
+                else
+                {
+                    system("cls");
+                    printf("\n\nDesignation ID can only be [%d] characters long. Try again.\n\n", IDSize - 2);
+                    return 1;
+                }
+            }
+    fclose(inventory);
+    PressEnter();
+    }
+
+    return 0;
+}
+
+int IDchecker(int compare, char inputID[]) // i compare ang ID if same ra sa kung unsay naa sa inventory
+{
+    for (int j = 0; j < countp; j++)
+        {
+            if (strcasecmp(inputID , p[j].id) == 0)
+            {
+                system("cls");
+                printf("This ID is already designated to : %s\n", p[j].name);
+                compare = 1;
+                break;
+            }
+    }
+    return compare;
+}
+
+int Namechecker(int compare, char inputname[]) // i compare ang name sa product
+{
+    for (int j = 0; j < countp; j++)
+        {
+            if (strcasecmp(inputname , p[j].name) == 0)
+            {
+                system("cls");
+                printf("This Product Name is already designated to : %s\n", p[j].id);
+                compare = 1;
+                break;
+            }
+        }
+    return compare;
+}
+
+void ReadInventory()
+{
+
+    void SortProductsMenu(int);
+    void SearchProduct(int);
+    void Cashier();
+    int sortchoice;
+    int n = readfile();
+
+        if (n == 0) // display
+            {
+                printf("\nFile detected, but there are no products, add products..\n");
+            }
+            info();
+            for (int i = 0; i < n; i++)
+            {
+                if (strlen(p[i].id) > 0)// if ang line kay puro ra zero, i ignore
+                {
+                    printf("\t\t%-10s\t     %-20s\t\t%-10.2f\t\t\t%-10d\n", p[i].id, p[i].name, p[i].price, p[i].quantity);
+                }
+            }
+            info();
+
+        do {
+            printf("\n\t\tTotal Amount of Individual Products in the Inventory :  [ %d ] \n", countp);
+            printf("\n\t\tWelcome To Inventory Options");
+            printf("\n\t\t[1] Sort Products\t[2] Find Product\t[3] Cashier\t[4] Main Menu\n\t\t: ");
+            scanf("%d", &sortchoice); printf("\n\n");
+            CheckInputError(sortchoice);
+            system("cls");
+
+            switch(sortchoice)
+            {
+            case 1:
+                SortProductsMenu(n);
+                break;
+            case 2:
+                SearchProduct(n);
+                break;
+            case 3:
+                Cashier();
+                break;
+            case 4:
+                Menu();
+                break;
+            default:
+                printf("\nprogram not found...\n");
+                system("cls");
+                ReadInventory();
+                break;
+                }
+            } while(sortchoice != 4);
+
+}
+
+void SearchProduct(int n)
+{
+    int EditProductInfo();
+    void removeproduct();
+    int FindProduct(char findID[]);
+    int choice;
+    char findID[NameLimit];
+    int found = 0;
+
+    printf("\n\t\t\t                     FFFFFF    IIIIIIII    NNNN   NN    DDDDDDD           ");
+    printf("\n\t\t\t                     FF           II       NN NN  NN    DD   DDD          ");
+    printf("\n\t\t\t                     FFFFF        II       NN  NN NN    DD    DD          ");
+    printf("\n\t\t\t                     FF           II       NN   N NN    DD   DDD          ");
+    printf("\n\t\t\t                     FF        IIIIIIII    NN    NNN    DDDDDDD     \n\n\n");
+
+
+    printf("\n\nEnter Zero / [ 0 ] to Exit Process...\t\t\t\t\t");
+    printf("\nEnter One / [ 1 ] to Shortcut to Inventory...\n");
+    printf("Enter [ID] or [Name] of the product to Find: ");
+    fflush(stdin);
+    fgets(findID, sizeof(findID), stdin);
+    findID[strcspn(findID, "\n")] = 0;
+
+    if (strcmp(findID, "1") == 0)
+        {
+            system("cls"); // clear screen // shortcut to Inventory
+            ReadInventory();
+        } else if (strcmp(findID, "0") == 0)
+        {
+            Menu();
+        }
+    system("cls");
+    found = FindProduct(findID);
+
+    if (found != 1)
+    {
+        printf("\n\t\t[ %s ] Not found in inventory", findID);
+    }else
+    {
+        printf("\n");
+    }
+
+    printf("\nOptions");
+    printf("\n[1] Edit Product\n[2] Remove Product from Inventory\n[3] Find Another Product\n[4] Go Back To Inventory\n: ");
+    scanf("%d", &choice);
+    switch(choice)
+    {
+    case 1:
+        EditProductInfo();
+        break;
+    case 2:
+        removeproduct();
+        break;
+    case 3:
+        SearchProduct(n);
+        break;
+    default:
+        system("cls");
+        Menu();
+        break;
+    }
+    Menu();
+}
+
+void SortProductsMenu(int n)
+{
+    void sortart();
+    void sortbylowestprice(int);
+    void sortbyhighestprice(int);
+    void sortbylowestquantity(int);
+    void sortbyhighestquantity(int);
+
+    system("cls");
+    int choice;
+    printf("\n\t\t\t                     SSSSSS    OOOOO     RRRRRRR    TTTTTTTT                ");
+    printf("\n\t\t\t                     SS       OO   OO    RR   RR       TT                   ");
+    printf("\n\t\t\t                      SSSS    OO   OO    RRRRR         TT                   ");
+    printf("\n\t\t\t                         SS   OO   OO    RR  RR        TT                   ");
+    printf("\n\t\t\t                     SSSSSS    OOOOO     RR  RRR       TT             \n\n\n");
+    printf("\n\n\tChoose Mode\n");
+    printf("\n\t[1] Sort by LOWEST Price\n\t[2] Sort by HIGHEST Price\n\t[3] Sort by LOWEST Quantity\n\t[4] Sort by HIGHEST Quantity\n\t[5] Inventory\n");
+    printf("\n\tMode : ");
+    scanf("%d", &choice);
+    CheckInputError(choice);
+    system("cls");
+        switch(choice)
+        {
+        case 1:
+            sortbylowestprice(n);
+            break;
+        case 2:
+            sortbyhighestprice(n);
+            break;
+        case 3:
+            sortbylowestquantity(n);
+            break;
+        case 4:
+            sortbyhighestquantity(n);
+            break;
+        case 5:
+            ReadInventory();
+            break;
+        default:
+            printf("\nprogram not found...\n");
+            ReadInventory();
+            break;
+        }
+}
+
+void sortbylowestprice(int n) // using bubble sort
+{
+    info();
+    for (int i = 0; i < n - 1; i++)
+    {
+        for (int j = 0; j < n - i - 1; j++)
+        {
+            if (p[j].price > p[j + 1].price)
+            {
+                struct product temp = p[j];
+                p[j] = p[j + 1];
+                p[j + 1] = temp;
+            }
+        }
+    }
+
+    for (int i = 0; i < n; i++) // to print the sorted list by lowest price
+        {
+        if (strlen(p[i].id) > 0)// if ang line kay walaey sulod , i ignore
+            {
+                printf("\t\t%-10s\t     %-20s\t\t%-10.2f\t\t\t%-10d\n", p[i].id, p[i].name, p[i].price, p[i].quantity);
+
+            }
+        }
+    info();
+        printf("\t\tSorted by Lowest Price\n");
+}
+
+void sortbyhighestprice(int n) // using bubble sort
+{
+    info();
+    for (int i = 0; i < n - 1; i++)
+    {
+        for (int j = 0; j < n - i - 1; j++)
+        {
+            if (p[j].price < p[j + 1].price)
+            {
+                struct product temp = p[j];
+                p[j] = p[j + 1];
+                p[j + 1] = temp;
+            }
+        }
+    }
+
+    for (int i = 0; i < n; i++)
+            {
+            if (strlen(p[i].id) > 0)
+                {
+                printf("\t\t%-10s\t     %-20s\t\t%-10.2f\t\t\t%-10d\n", p[i].id, p[i].name, p[i].price, p[i].quantity);
+
+                }
+            }
+    info();
+    printf("\t\tSorted by Highest Price\n");
+}
+
+void sortbylowestquantity(int n) // using bubble sort
+{
+    info();
+    for (int i = 0; i < n - 1; i++)
+    {
+        for (int j = 0; j < n - i - 1; j++)
+        {
+            if (p[j].quantity > p[j + 1].quantity)
+            {
+                struct product temp = p[j];
+                p[j] = p[j + 1];
+                p[j + 1] = temp;
+            }
+        }
+    }
+
+    for (int i = 0; i < n; i++)
+            {
+            if (strlen(p[i].id) > 0)
+                {
+                printf("\t\t%-10s\t     %-20s\t\t%-10.2f\t\t\t%-10d\n", p[i].id, p[i].name, p[i].price, p[i].quantity);
+
+                }
+            }
+    info();
+    printf("\t\tSorted by Lowest Quantity\n");
+}
+
+void sortbyhighestquantity(int n) // using bubble sort
+{
+    info();
+    for (int i = 0; i < n - 1; i++)
+    {
+        for (int j = 0; j < n - i - 1; j++)
+        {
+            if (p[j].quantity < p[j + 1].quantity)
+            {
+                struct product temp = p[j];
+                p[j] = p[j + 1];
+                p[j + 1] = temp;
+            }
+        }
+    }
+
+    for (int i = 0; i < n; i++)
+            {
+            if (strlen(p[i].id) > 0)
+                {
+                printf("\t\t%-10s\t     %-20s\t\t%-10.2f\t\t\t%-10d\n", p[i].id, p[i].name, p[i].price, p[i].quantity);
+
+                }
+            }
+    info();
+    printf("\t\tSorted by Highest Quantity\n");
+}
+
+void removeproduct() // wala gi remove ang product, wala lang jud gi apil og save
+{
+    countp = readfile(); //ihapon pila kabook products naa sa file
+    char findID[NameLimit]; // find ID unta na dapat una, pwede raman sad i find ang name, kapoy rename.
+    int found = 0;
+
+    printf("\n                       RRRRRRR    EEEEEEE    MM        MM     OOOOOOO     VV      VV    EEEEEEE        ");
+    printf("\n                       RR   RR    EE         MMMM    MMMM    OO     OO     VV    VV     EE             ");
+    printf("\n                       RR  RR     EEEEE      MM MM  MM MM    OO     OO      VV  VV      EEEEE          ");
+    printf("\n                       RRRR       EE         MM   MM   MM    OO     OO       VVVV       EE             ");
+    printf("\n                       RR  RRR    EEEEEEE    MM        MM     OOOOOOO         VV        EEEEEEE  \n\n\n");
+
+    printf("\nEnter Zero / [ 0 ] to Exit Process...\t\t\t\t\t");
+    printf("\nEnter One / [ 1 ] to Shortcut to Inventory...\n");
+    printf("Enter [ID] or [Name] of the product to remove: ");
+    fflush(stdin);
+    fgets(findID, sizeof(findID), stdin);
+    findID[strcspn(findID, "\n")] = 0;
+
+    if (strcmp(findID, "1") == 0)
+        {
+            system("cls"); // clear screen // shortcut to Inventory
+            ReadInventory();
+        } else if (strcmp(findID, "0") == 0)
+        {
+            Menu();
+        }
+
+    for (int i = 0; i < countp; i++)
+    {
+        if ((strcasecmp(p[i].id, findID) == 0) || (strcasecmp(p[i].name, findID) == 0)) // I compare ang ID or Name sa kung unsay naa sa Database, if mo result og 0, mo display
+        {
+            printf("\nProduct found....XD\n");
+            info();
+            printf("\t\t%-10s\t     %-20s\t\t%-10.2f\t\t\t%-10d\n", p[i].id, p[i].name, p[i].price, p[i].quantity);
+            found = 1; // para confirm
+
+            for (int j = i; j < countp - 1; j++)
+            {
+                p[j] = p [j + 1]; // i tukmod ang product nga napilian sa next nga array
+            }
+            countp--;   // ang gi tukmod nga product dile ma apil og save kay ang countp gi - og 1
+            i--;        // if naay duplicate nga ID or product, ma detect og pwede ma remove in once para dile na mag mano mano or remove
+        }
+    }
+
+    if (found == 0)
+        {
+        printf("Product with ID [ %s ] not found in inventory.\n", findID);
+        PressEnter();
+        system("cls");
+
+        }
+    else if (found == 1)
+        {
+        printf("\n\nAre you sure to remove Product [%s] from Inventory? \n",findID);
+        printf("[1] Yes\t [2]. No : ");
+        int choice;
+        scanf("%d", &choice);
+
+        switch(choice)
+        {
+            case 1:
+            writefile(); // dile maapil og save ang gi tukmod nga product
+            system("cls");
+            printf("Product successfully removed from inventory.\n");
+            break;
+        case 2:
+            system("cls");
+            printf("Product not removed from inventory...");
+            break;
+        default:
+            system("cls");
+            printf("input error...");
+            break;
+        }
+    }
+}
+
+int FindProduct(char findID[])
+{
+    int found = 0;
+    for (int i = 0; i < countp; i++)
+    {
+        if ((strcasecmp(p[i].id, findID) == 0) || (strcasecmp(p[i].name, findID) == 0)) // Compare input ID with existing product IDs
+        {
+            printf("\nProduct found....XD\n");
+            info();
+            printf("\t\t%-10s\t     %-20s\t\t%-10.2f\t\t\t%-10d\n", p[i].id, p[i].name, p[i].price, p[i].quantity);
+            printf("\t\t------------------------------------------------------------------------------------------------\n");
+            found = 1; // if ma detect ang ID ang found = 1
+            break;
+        }
+    }
+    return found;
+}
+
+int EditProductInfo()
+{
+    void ConfirmChoice();
+
+    countp = readfile(); //ihapon pila kabook products naa sa file
+    char findID[NameLimit];
+    int found = 0;
+    int ConfigChoice;
+
+    printf("\n\t                             EEEEEEE    DDDDDD      IIIIIIII    TTTTTTTT         ");
+    printf("\n\t                             EE         DD   DDD       II          TT            ");
+    printf("\n\t                             EEEEE      DD    DD       II          TT            ");
+    printf("\n\t                             EE         DD   DDD       II          TT            ");
+    printf("\n\t                             EEEEEEE    DDDDDD      IIIIIIII       TT            \n\n\n");
+
+
+    printf("\nEnter Zero / [ 0 ] to Exit Process...\t\t\t\t\t");
+    printf("\nEnter One / [ 1 ] to Shortcut to Inventory...\n");
+    printf("\n");
+    printf("Enter [ID] or [Name] of the product to Edit/Update: ");
+    fflush(stdin);
+    fgets(findID, sizeof(findID), stdin);
+    findID[strcspn(findID, "\n")] = 0;
+
+    if (strcmp(findID, "1") == 0)
+        {
+            system("cls"); // clear screen // shortcut to Inventory
+            ReadInventory();
+        } else if (strcmp(findID, "0") == 0)
+        {
+            Menu();
+        }
+
+    // Check if ang gi input nga ID kay naa sa inventory database
+    found = FindProduct(findID);
+
+    if (found == 0)
+    {
+
+        printf("\nID [ %s ] not found in Inventory database...", findID);
+        PressEnter();
+        system("cls");
+    }
+    else if (found == 1)
+    {
+        void IncreaseProductQuantity(char findID[], int amount);
+        void DecreaseProductQuantity(char findID[], int amount);
+
+        int choice;
+        int amount = 0;
+        float newprice;
+        char inputname[NameLimit];
+        char inputID[IDSize];
+        int compare = 0;
+
+        printf("\nChoose Configuration Mode : ");
+        printf("\n1. Edit Product ID\n");
+        printf("2. Edit Product Name\n");
+        printf("3. Edit Product Price\n");
+        printf("4. Edit Product Quantity\n");
+        printf("5. Go Back To Main Menu\n : ");
+        scanf("%d", &ConfigChoice);
+
+        CheckInputError(ConfigChoice);
+
+        switch(ConfigChoice)
+        {
+        case 1:
+        printf("enter New ID for product : ");
+        fflush(stdin);
+
+        fgets(inputID, sizeof(inputID), stdin);
+        inputID[strcspn(inputID, "\n")] = 0;
+
+        //NEED TO BE FIXED // UPDATE OK NA
+        for (int i = 0; i < countp; i++)
+        {
+            compare = IDchecker(*p[i].id, inputID);
+            if (compare == 1)
+            {
+                return -1;
+            } else
+            {
+                if ((strcasecmp(p[i].id, findID) == 0) || (strcasecmp(p[i].name, findID) == 0))
+                {
+                    strcpy(p[i].id, inputID); // change id
+                    info();
+                    printf("\t\t%-10s\t     %-20s\t\t%-10.2f\t\t\t%-10d\n", p[i].id, p[i].name, p[i].price, p[i].quantity);
+                    break;
+                }
+            }
+        }
+        ConfirmChoice();
+                break;
+        case 2:
+            printf("Enter New Name for Product : ");
+            fflush(stdin); // I remove ang input buffer, katung space human sa line 412 basta, kapoy explain huna huna pako
+            fgets(inputname, sizeof(inputname), stdin);
+            inputname[strcspn(inputname, "\n")] = 0;
+
+            for(int i = 0; i < countp; i++)
+            {
+                compare = Namechecker(*p[i].name, inputname);
+                if(compare == 1)
+                {
+                    return -1;
+                }else
+                {
+                    if ((strcasecmp(p[i].id, findID) == 0) || (strcasecmp(p[i].name, findID) == 0)) // ako nalang siguro ni buhatan of function
+                        {
+                            strcpy(p[i].name, inputname); // change name
+                            info();
+                            printf("\t\t%-10s\t     %-20s\t\t%-10.2f\t\t\t%-10d\n", p[i].id, p[i].name, p[i].price, p[i].quantity);
+                            break;
+                        }
+                }
+            }
+            ConfirmChoice();
+            break;
+        case 3:
+            printf("Enter New Price for Product : ");
+            scanf("%f", &newprice);
+            if (newprice < 0)
+            {
+                system("cls");
+                printf("\nPlease enter a positive value/integer or number, not number with [ - ], Admin\n");
+                Menu();
+            }else
+            for (int i = 0; i < countp; i++)
+                {
+                    if ((strcasecmp(p[i].id, findID) == 0) || (strcasecmp(p[i].name, findID) == 0))
+                        {
+                            system("cls");
+                            p[i].price = newprice;
+                            info();
+                            printf("\t\t%-10s\t     %-20s\t\t%-10.2f\t\t\t%-10d\n", p[i].id, p[i].name, p[i].price, p[i].quantity);
+                            break;
+                        }
+                }
+            ConfirmChoice();
+            break;
+        case 4:
+            printf("[1] Add or [2] Remove Quantity to Product?");
+            printf("\nEnter Choice : ");
+            scanf("%d", &choice);
+            (choice == 1) ? IncreaseProductQuantity(findID, amount) : printf("Input Error");
+            (choice == 2) ? DecreaseProductQuantity(findID, amount) : printf("Input Error");
+
+            // Before same ra sa anang naa sa babaw
+            /*
+            if (choice == 1)
+            {
+                IncreaseProductQuantity(findID,amount);
+            }
+            else if (choice == 2)
+            {
+                DecreaseProductQuantity(findID,amount);
+            }
+            else
+            printf("\ninput error..");
+            */
+            break;
+        case 5:
+            system("cls");
+            printf("Redirected Back To Main Menu");
+            Menu();
+            break;
+        default:
+            system("cls");
+            printf("Redirected Back To Main Menu");
+            Menu();
+            break;
+        }
+
+    }
+    return 0;
+}
+
+void ConfirmChoice() // para sa edit option
+{
+    int ConfirmChoice;
+    printf("\nConfirm Update?\n");
+    printf("1. Yes\t 2. No : ");
+    scanf("%d", &ConfirmChoice);
+
+    if (ConfirmChoice == 1)
+    {
+        // kung unsay gi edit, i save
+        writefile();
+        system("cls");
+        printf("\nSuccessfully Updated Product\n");
+    }
+    else if (ConfirmChoice == 2)
+    {
+        system("cls");
+        printf("\nProduct Data or Info not Rewritten or Changed...\n");
+    }
+}
+
+void IncreaseProductQuantity(char findID[], int amount) // edit option
+{
+    printf("\n\nEnter Amount of Product to be Added to Inventory Stock : ");
+    scanf("%d", &amount);
+
+        if (amount < 0)
+        {
+            system("cls");
+            printf("\nPlease enter a positive value/integer or number, not number with [ - ], Admin\n");
+            Menu();
+
+        }else
+        for (int i = 0; i < countp; i++)
+        {
+            if ((strcasecmp(p[i].id, findID) == 0) || (strcasecmp(p[i].name, findID) == 0)) // ako nalang siguro ni buhatan of function
+            {
+                p[i].quantity += amount;
+                info();
+                printf("\t\t%-10s\t     %-20s\t\t%-10.2f\t\t\t%-10d\n", p[i].id, p[i].name, p[i].price, p[i].quantity);
+                break;
+            }
+        }
+    ConfirmChoice();
+    printf("\n\nSuccessfully Updated Inventory Stock of Product....\n\n");
+}
+
+void DecreaseProductQuantity(char findID[], int amount) // edit option
+{
+    printf("\n\nEnter Amount of Product to be Removed/Decreased from Inventory Stock : ");
+    scanf("%d", &amount);
+
+        if (amount < 0)
+        {
+            system("cls");
+            printf("\nPlease enter a positive value/integer or number, not number with [ - ], Admin\n");
+            Menu();
+        }else
+        for (int i = 0; i < countp; i++)
+            {
+                if ((strcasecmp(p[i].id, findID) == 0) || (strcasecmp(p[i].name, findID) == 0))
+                {
+                    if(p[i].quantity < amount)
+                    {
+                        system("cls");
+                        printf("\nThe amount to be removed exceeds what is in the inventory stock..\n\n");
+                        Menu();
+                    }
+                    else
+                    {
+                        ConfirmChoice();
+                        p[i].quantity -= amount;
+                        info();
+                        printf("\t\t%-10s\t     %-20s\t\t%-10.2f\t\t\t%-10d\n", p[i].id, p[i].name, p[i].price, p[i].quantity);
+                        printf("\n\nSuccessfully Updated Inventory Stock of Product....\n\n");
+                        break;
+                    }
+                }
+            }
+}
+
+void Cashier()
+{
+    void PressEnter();
+
+    struct display // struct para sa temporary inventory, labad ako ulo
+    {
+        char displayid[IDSize];
+        char displayname[NameLimit];
+        float displayprice;
+        int QuantityToBeBought;
+    };
+
+    struct display d[999]; // kung pila kabook products i display pwede buhatan og macro kay same raman sad sila sa p (product struct)
+
+    countp = readfile(); //ihapon  pila kabook products naa sa file og i load sad ang contents para sa file
+
+    char findID[30];
+    int found = 0;
+    int QuantityToBeBought; // taas ye
+
+    static float AccumulatingTotal; // sir gamit nako static variable sir tagae ko plus points sir
+    static int n = 1;   // number of products sulod sa display file
+    static int pendingproduct = 0; // para sa message
+
+    float bal; // para calculate if mana og palit ang customer
+
+    do {
+        tempcashierdisplay = fopen("TemporaryInventory.txt", "r");
+
+        if (tempcashierdisplay == NULL)
+            {
+                printf("\nCannot open display file..\n");
+            }else
+            {
+                if (pendingproduct > 0)// check if naay sulod ang file
+                {
+                printf("\n\t\t\t\t========================= Items Bought =========================\n");
+                printf("\t\t------------------------------------------------------------------------------------------------\n");
+                printf("\t\tID\t\t     NAME\t          \t\tPRICE\t\t\tQUANTITY BOUGHT\n");
+                printf("\t\t------------------------------------------------------------------------------------------------\n");
+                for (int j = n; j > 1; j--) // ako gi reuse gikan sa katong read file para sa inventory pero para sa display items
+                    {
+                        fgets(d[j].displayid, sizeof(d[j].displayid), tempcashierdisplay);
+                        d[j].displayid[strlen(d[j].displayid) - 1] = 0; // remove new lines, pls dont remove, it will colapse the list
+
+                        fgets(d[j].displayname, sizeof(d[j].displayname), tempcashierdisplay);
+                        d[j].displayname[strlen(d[j].displayname)-1] = 0; // remove new lines
+
+                        fscanf(tempcashierdisplay, "%f", &d[j].displayprice); // get info for prices of each product from inventory
+                        fscanf(tempcashierdisplay, "%d", &d[j].QuantityToBeBought);  // get info for available stock of each product from inventory
+                        fgetc(tempcashierdisplay); // kani nga part i arrange ang listahan, labad na ako ulo pun an ra diay an
+
+                        printf("\t\t%-10s\t     %-20s\t\t%-10.2f\t\t\t%-10d\n", d[j].displayid, d[j].displayname, d[j].displayprice, d[j].QuantityToBeBought);
+                    }
+                        printf("\t\t------------------------------------------------------------------------------------------------\n");
+                        fclose(tempcashierdisplay);
+                        printf("\t\tTotal Amount to be Paid is : [""\033[32m %.2f \033[0m" "] Pesos", AccumulatingTotal);
+                }
+                else
+                {
+                    printf("\n\t\t\t\t\tInput product ID or Name to start selling");
+                }
+            }
+        printf("\n");
+        printf("\n                      CCCCCCC       AAA       SSSSSSSSS    HH   HH    IIIIIIIII   EEEEEE    RRRRRRR           ");
+        printf("\n                    CCC            A   A      SSS          HH   HH       III      EE        RR   RR           ");
+        printf("\n                   CCC            A AAA A     SSSSS        HHHHHHH       III      EEEEE     RRRRR             ");
+        printf("\n                    CCC          AA     AA        SSSS     HH   HH       III      EE        RR   RR           ");
+        printf("\n                     CCCCCCCC   AA       AA   SSSSSSSSS    HH   HH    IIIIIIIII   EEEEEE    RRR   RR          \n");
+
+        printf("\nEnter Zero / [ 0 ] to End Process / Calculate Payment...\t\t\t\t\t");
+        printf("\nEnter  One / [ 1 ] to Shortcut to Inventory...\n");
+        printf("\nEnter [ID] or [Name] of the product to be SOLD: ");
+        fflush(stdin);
+        fgets(findID, sizeof(findID), stdin);
+        findID[strcspn(findID, "\n")] = 0;
+
+    if (strcmp(findID, "1") == 0)
+    {
+        system("cls"); // clear screen // shortcut to Inventory
+        ReadInventory();
+
+    } else if (strcmp(findID, "0") == 0)
+    {
+        printf("\nEnter Balance (Kwarta sa Customer): "); // calculate para sukli sa customer
+        scanf("%f", &bal);
+
+            if (bal >= AccumulatingTotal) // para sukli
+            {
+                printf("\n\nChange (Sukli) for Customer : [""\033[32m %.2f \033[0m" "] Pesos", bal - AccumulatingTotal);
+
+            }else if (bal < AccumulatingTotal) // if kuwangan og money ang customer
+            {
+                printf("\n\nKuwangan og : [""\033[32m %.2f \033[0m" "] Pesos", AccumulatingTotal - bal);
+            }
+
+            writefile(); // save sa inventory file ang new amount sa products
+            AccumulatingTotal = 0;  // reset static variable sa total
+            pendingproduct = 0;
+            n = 1; // reset
+
+            char buffer;
+            buffer = getchar();
+            printf("%c", buffer);
+            PressEnter();
+            system("cls"); // clear screen
+            Menu();
+    }
+
+    found = FindProduct(findID); // Check if the product is in inventory
+    if (found == 0)
+    {   system("cls"); // clear screen
+        printf("\nID [ %s ] not found in Inventory database", findID);
+        Cashier();
+
+    } else if (found == 1){
+        }
+
+        printf("\nHow many %s to be bought? : ", findID);
+        scanf("%d", &QuantityToBeBought);
+
+        if (QuantityToBeBought < 0)
+        {
+            system("cls");
+            printf("\nPlease enter a positive value, don't put [ - ], sincerely, Admin\n");
+        }else
+        {
+            int ConfirmPurchase;
+            printf("\nConfirm Purchase?\n");
+            printf("[1] Yes\t [2] No\n");
+            scanf("%d", &ConfirmPurchase);
+
+            if (ConfirmPurchase == 2)
+            {
+                system("cls");
+                printf("\n Purchase not confirmed, Product Stock not decreased...\n");
+
+            }else if (ConfirmPurchase == 1)
+                {
+                system("cls");
+
+                for (int i = 0; i < countp; i++)
+                {
+                    if ((strcasecmp(p[i].id, findID) == 0) || (strcasecmp(p[i].name, findID) == 0))
+                    {
+
+                        if (QuantityToBeBought > p[i].quantity) // check f ang stock sa product sa inventory mas labaw sa palitonon
+                        {
+                            printf("\nQuantity to be Bought exceeds inventory stock..."); // error message
+
+                        } else if (QuantityToBeBought < p[i].quantity)
+                        {
+                            p[i].quantity -= QuantityToBeBought; // reduce quantity sa inventory
+
+                            float total = QuantityToBeBought * p[i].price; // compute total
+                            AccumulatingTotal += total; // mag add every time naay i input nga product
+
+                            tempcashierdisplay = fopen("TemporaryInventory.txt", "a");
+                            if (tempcashierdisplay == NULL)
+                            {
+                                printf("\nError\n");
+                            }else
+                            {
+                                n++; // number of products sulod sa display file
+                                pendingproduct++;
+                                for (int i = 0; i < countp; i++)
+                                {
+                                        if ((strcasecmp(p[i].id, findID) == 0) || (strcasecmp(p[i].name, findID) == 0))
+                                        {
+                                            // ibutang ang kung unsay naa sa struct members sa p(product) sa mga d(display product) members
+                                            strcpy(d[i].displayid, p[i].id);
+                                            strcpy(d[i].displayname, p[i].name);
+                                            d[i].displayprice = p[i].price;
+
+                                            // save sa temporary nga file ang mga gipamalit para display
+                                            fprintf(tempcashierdisplay, "%s\n", d[i].displayid);
+                                            fprintf(tempcashierdisplay, "%s\n", d[i].displayname);
+                                            fprintf(tempcashierdisplay, "%.2f\n", d[i].displayprice);
+                                            fprintf(tempcashierdisplay, "%d\n", QuantityToBeBought);
+                                            break;
+                                        }
+                                }
+                                fclose(tempcashierdisplay);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } while(1);
+
+    AccumulatingTotal = 0; // reset nasad
+    n = 1;
+    pendingproduct = 0;
+}
+
+void SizeOfFile() // wala koy lingaw, determine the file size
+{
+
+    inventory = fopen("inventory.txt", "r");
+    long size;
+    fseek(inventory, 0, SEEK_END);
+    size = ftell(inventory);
+    fclose(inventory);
+    printf("\nSize of inventory is %ld bytes(b) or %.2f kilobytes(kb).", size, (float)size / 1000);
+
+}
+
+void checkfile() // checks the status of files
+{
+    inventory = fopen("inventory.txt", "r"); // file
+    passwords = fopen("pass.txt", "r");
+
+    if (inventory && passwords)
+    {
+        printf("\nFile(s) Status : [""\033[32mDetected\033[0m" "]\n");
+        //printf("\nFile Status : [Detected]\n"); // if naay file
+        fclose(inventory);
+        fclose(passwords);
+
+    } else
+    {
+        if (inventory == NULL && passwords == NULL) // if both files kay wala ma detect
+        {
+            printf("\nFile(s) Status : [""\033[31m Not Detected\033[0m" "]\n");
+            printf("Code [NPI] || creating files...\n");
+
+            inventory = fopen("inventory.txt", "w"); // if walay file, buhat og file
+            passwords = fopen("pass.txt", "w"); // buhat og file
+            fprintf(passwords, "admin123");
+
+            printf("\nFileStatus : [""\033[33mCreated\033[0m" "]\n");
+            fclose(inventory);
+            fclose(passwords);
+
+        }
+        else if (inventory == NULL && passwords != NULL) // if ang Inventory File kay wala pero naay file para sa passwords
+        {
+            printf("\nFileStatus : [""\033[31mNot Detected\033[0m" "]\n");
+            printf("Code [NI] || creating files...\n");
+
+            inventory = fopen("inventory.txt", "w"); // if walay file, buhat og file
+
+            printf("\nFileStatus : [""\033[33mCreated\033[0m" "]\n");
+            fclose(inventory);
+            fclose(passwords);
+
+        }
+        else if (inventory != NULL && passwords == NULL) // if ang password File kay wala pero naay file para sa inventory
+        {
+            printf("\nFileStatus : [""\033[31mNot Detected\033[0m" "]\n");
+            printf("Code [NP] || creating files...\n");
+            printf("\nFileStatus : [""\033[33mCreated\033[0m" "]\n");
+
+            passwords = fopen("pass.txt", "w"); // buhat og file
+            fprintf(passwords, "admin123"); // default password, pwede ma change
+
+            printf("\nFileStatus : [""\033[33mCreated\033[0m" "]\n");
+
+            fclose(inventory);
+            fclose(passwords);
+
+        } else
+        printf("\nfiles cannot be created...");
+    }
+}
+int AdminCommands(int attempts)
+{
+    int PasswordSystem();
+    char NewAdminPassword[PasswordLength];
+    int GiveAccess = 0;
+    int back;
+    int choice;
+    int n;
+
+    printf("\nHello Admin, Please Enter Password to Proceed!\n");
+    printf("\n[1] Yes, Proceed \n[2] Go Back to Main Menu\n: ");
+    scanf("%d", &back);
+
+    if (back == 1)
+    {
+    fflush(stdin);// if i remove ni mo likoy kay fgets ang gi gamit sa password input dile scanf
+    GiveAccess = PasswordSystem(attempts);
+
+        if(GiveAccess == 1)
+        {
+            system("cls"); // clear screen
+            printf("\n\t\t              AAAA        DDDDDDDD      MMM       MMM    IIIIIIII    NNNN    NN       ");
+            printf("\n\t\t             AA  AA       DD    DDD     MM MM   MM MM       II       NN NN   NN       ");
+            printf("\n\t\t            AA AA AA      DD     DD     MM  MM MM  MM       II       NN  NN  NN       ");
+            printf("\n\t\t           AA      AA     DD    DDD     MM   MMM   MM       II       NN   NN NN       ");
+            printf("\n\t\t          AA        AA    DDDDDDDD      MM         MM    IIIIIIII    NN     NNN \n\n\n");
+
+            printf("\nAdmin Option\n");
+            printf("[1] Clear Inventory File\n[2] Add New Admin Password\n[3] Change Password + Erase Other Password\n[4] Go Back to Main Menu: ");
+            scanf("%d", &n);
+            CheckInputError(n);
+        switch(n)
+        {
+        case 1:
+            printf("\nAre you sure to Clear and Make Inventory File?");
+            printf("\n If you choose [Yes] the program will end immediately and you have to login back again");
+            printf("\n1. Yes\t 2. No : ");
+            scanf("%d", &choice);
+
+            if (choice == 1)
+            {
+                fopen("inventory.txt", "w");
+                if (inventory == NULL)
+                {
+                    printf("\nFile cannot be opened");
+                }else
+                fclose(inventory);
+                system("cls"); // clear screen
+                printf("\nInventory File Cleared..");
+                printf("Exiting Inventory System");
+                exit(1);
+            } else{
+                printf("Inventory File Not Cleared..");
+            }
+                break;
+        case 2:
+            fflush(stdin);
+            GiveAccess = PasswordSystem(attempts);
+
+            if (GiveAccess == 1)
+            {
+                system("cls"); // clear screen
+                printf("\nPassword must not have Spaces and Case-Sensitive\n");
+                printf("\nEnter New admin password : ");
+                scanf("%s", NewAdminPassword);
+
+                printf("Are you sure to input new Admin password?");
+                printf("\n1. Yes\t 2. No : ");
+                scanf("%d", &choice);
+
+            if (choice == 1)
+            {
+                passwords = fopen("pass.txt", "a");
+                if (passwords == NULL)
+                {
+                    printf("Can't open file...");
+                    return -1;
+                }else
+                printf("Successfully Added Password/Key to Password Database!");
+                fprintf(passwords, "\n%s", NewAdminPassword);
+                fclose(passwords);
+            }
+            else if (choice == 2)
+                {
+                system("cls"); // clear screen
+                printf("Password/Key not added to Password Database!");
+                }
+            }else{
+            printf("Password Attempts are Wrong, Redirected Back to Main Menu");
+            }
+            break;
+        case 3:
+            passwords = fopen("pass.txt", "w");
+            if(passwords == NULL)
+            {
+                printf("Password file can't open :c ");
+            }
+            printf("Enter New Password : ");
+            scanf("%s" , NewAdminPassword);
+            fprintf(passwords, "%s", NewAdminPassword);
+            fclose(passwords);
+            system("cls"); // clear screen
+            printf("\nSuccessfully Changed Password");
+            break;
+        case 4:
+            system("cls"); // clear screen
+            printf("\n\nRedirected Back To Main Menu");
+            Menu();
+            break;
+        default:
+            system("cls"); // clear screen
+            printf("\n\nRedirected Back To Main Menu");
+            Menu();
+            break;
+            }
+        }else{
+        printf("Password Attempts are Wrong, Redirected Back to Main Menu");
+        }
+
+    }else
+    {
+        Menu();
+    }
+    return 0;
+}
+
+int PasswordSystem(int attempts) // recursion
+{
+    int PasswordFinder(char pass[]);
+
+    printf("\n\t\t\t\t\t2 in 1 Cashier Registry Inventory Program System\n");
+    printf("\n\t\t\t\t\t\t\t2in1 C.R.I.P.S\n");
+
+    printf("\n                     WW       WW    EEEEEEE    LL         CCCCCCC     OOOOO     MM        MM    EEEEEEE         ");
+    printf("\n                     WW       WW    EE         LL        CCC         OO   OO    MMMM    MMMM    EE             ");
+    printf("\n                     WW   W   WW    EEEEE      LL        CC          OO   OO    MM MM  MM MM    EEEEE          ");
+    printf("\n                     WW  W W  WW    EE         LL        CCC         OO   OO    MM   MM   MM    EE             ");
+    printf("\n                      WW  W  WW     EEEEEEE    LLLLLL     CCCCCCC     OOOOO     MM        MM    EEEEEEE          \n\n\n");
+    checkfile(); // if walay naka reserve daan nga file, automatic mobuhat og file
+    SizeOfFile(); // i read pilay size sa file
+
+    int found;
+    char pass[PasswordLength]; // 18 ka characters ang limit sa password, pwede siguro pun an
+
+    if(attempts > 0)
+    {
+
+    printf("\n\nAttempts Left : %d", attempts);
+    printf("\n\n===============================");
+    printf("\nEnter Password : ");
+
+    fgets(pass, sizeof(pass), stdin); // hurot ako lima ka oras, labad ulo ilisan ra diay ang scanf
+    pass[strcspn(pass, "\n")] = 0;
+    fflush(stdin);
+
+    found = PasswordFinder(pass);
+
+        if (found == 1)
+        {
+            system("cls"); // clear screen
+            return 1;
+        }
+        else
+        {   system("cls"); // clear screen
+            printf("\nEnter Password is Wrong\n");
+            return PasswordSystem(attempts - 1);  // <---  DARA recursion part, pwede raman i loop
+        }
+    }
+    return 0;
+}
+
+int PasswordFinder(char pass[]) // wako ka sabot sakong gibati ron, mura nako dire og kabuangon
+{
+    passwords = fopen("pass.txt", "r");
+    if (passwords == NULL)
+    {
+        printf("\nNo Password File...\n");
+    }else{
+
+        char passwordinfile[PasswordLength];
+        int n;
+        int found = 0;
+
+        fscanf(passwords, "%d", &n); // dara diay
+
+        for(int i = 0; i < n; i++)
+        {
+            fscanf(passwords, "%s", passwordinfile); // ang pag input sa passwords kay dapat walay spaces
+            if (strcmp(passwordinfile, pass) == 0) // i compare ang gi input nga password sa kung unsay nakabutang sa password file
+            {
+                found = 1;
+                break;
+            }
+        }
+        fclose(passwords);
+        return found;
+    }
+    return 0;
+}
+void Menu() // Main Menu Section
+{
+    void ExitProgramConfirm();
+
+    int n;
+    int attempts = NumberOfAttempts; // number of attempts para sa pag add og new admin access key/password
+
+    do {
+        checkfile(); // if walay naka reserve daan nga file, automatic mobuhat og file
+        SizeOfFile(); // i read pilay size sa file
+
+        printf("\n\n\t\t\t\t\t\t\tWelcome User!");
+        printf("\n\n\t\t\t\t\t\t\t[ CHOOSE MODE ]\n\n");
+        printf("\t\t\t\t\t\t\t[1] Cashier\n\t\t\t\t\t\t\t[2] Check inventory\n\t\t\t\t\t\t\t");
+        printf("[3] Edit Product\n\t\t\t\t\t\t\t[4] Add New Product\n\t\t\t\t\t\t\t[5] Remove Product\n\t\t\t\t\t\t\t[6] Admin Commands\n");
+        printf("\t\t\t\t\t\t\t[7] Exit Program\n\t\t\t\t\t\t\t:");
+        scanf("%d", &n);
+
+        system("cls"); // clear screen
+        CheckInputError(n); // para dile sige mag loop kung dile number ang i input
+
+        switch(n)
+        {
+        case 1:
+            tempcashierdisplay = fopen("TemporaryInventory.txt","w"); // everytime i open ang cashier kay i clear ang file
+            Cashier();
+            break;
+        case 2:
+            ReadInventory();
+            break;
+        case 3:
+            EditProductInfo();
+            break;
+        case 4:
+            addproduct();
+            break;
+        case 5:
+            removeproduct();
+            break;
+        case 6:
+            AdminCommands(attempts);
+            break;
+        case 7:
+            ExitProgramConfirm();
+            break;
+        default:
+            printf("not found...\n\n");
+            break;
+        }
+    } while (n != 7); // dile siya mo exit kung dile number "7" and i input
+}
+
+void ExitProgramConfirm() // para sa Menu option 7
+{
+    int confirm;
+    printf("\nAre you sure to Exit Program?\n");
+    printf("[1] Yes\t [2] No : ");
+    scanf("%d", &confirm);
+
+    if (confirm == 1)
+    {
+        printf("\n\n\t\t\t\t\t\tThank you for using this program!, Nada(Admin)\n\n");
+        exit(0);
+
+    }else{
+        Menu();
+    }
+}
+
+int main()
+{
+    countp = countproducts(); // i load ang mga products og i count
+
+    int match;
+    int attempts = NumberOfAttempts; // attempts para sa password system, pwede ma config
+
+    match = PasswordSystem(attempts);
+    (match == 1) ? Menu() : printf("\n\n\nPlease Contact an Administrator Regarding this Matter\n\n"),PressEnter();
+
+    // sir mura rani og if else statement, naa ni sa katong material sa search and sort
+
+
+    return 0;
+}
