@@ -1,0 +1,396 @@
+A0001
+Coca Cola
+12.99
+12
+A0002
+Pepsi
+10.49
+31
+A0004
+Fanta
+11.49
+1
+A0005
+Mountain Dew
+13.99
+302
+A0006
+Dr. Pepper
+9.49
+62
+A0007
+7 Up
+7.99
+23
+A0008
+Gatorade Lemon
+6.99
+47
+A0009
+Red Bull
+15.99
+12
+A0010
+Tropicana Juice
+5.49
+50
+A0011
+Nestlé Pure Life
+4.99
+65
+A0012
+Aquafina
+3.99
+80
+A0013
+La Croix Lime
+8.49
+30
+A0014
+Vita Coco Water
+9.99
+25
+A0015
+Smartwater
+2.79
+52
+A0016
+Arizona Tea
+1.99
+73
+A0017
+Canada Dry
+10.99
+18
+A0018
+Schweppes
+4.49
+42
+A0019
+Red Bull Sugarfree
+16.49
+10
+A0020
+Monster Energy
+14.99
+22
+A0021
+Peach Snapple
+3.49
+24
+A0022
+Lipton Tea
+2.99
+60
+A0023
+Orange Juice
+5.79
+20
+A0024
+Minute Maid
+4.59
+45
+A0025
+Calypso Lemonade
+6.19
+33
+A0026
+Hawaiian Punch
+7.49
+28
+A0027
+Celsius Drink
+17.99
+9
+A0028
+Bodyarmor
+12.49
+24
+A0029
+Gatorade Zero
+6.49
+66
+A0030
+Powerade
+5.69
+52
+A0031
+Snapple Apple
+3.99
+48
+A0032
+Lemonade Stand
+3.29
+74
+A0033
+Root Beer
+4.79
+31
+A0034
+Mango Lassi
+5.99
+40
+A0035
+Limeade
+3.59
+85
+A0036
+Soda Stream
+13.49
+19
+A0037
+Tazo Tea
+6.69
+32
+A0038
+Perrier Water
+2.99
+88
+A0039
+Pineapple Water
+7.99
+18
+A0040
+Bai Antioxidant
+2.49
+53
+A0041
+Ginger Beer
+3.69
+50
+A0042
+Sunkist Soda
+8.19
+39
+A0043
+Schweppes Ginger
+4.29
+59
+A0044
+V8 Juice
+4.89
+30
+A0045
+Simply Orange
+5.29
+47
+A0046
+Ocean Spray
+4.69
+66
+A0047
+Honest Tea
+3.19
+44
+A0048
+San Pellegrino
+1.89
+91
+A0049
+Iced Coffee
+6.99
+25
+A0050
+Starbucks Frappuccino
+3.99
+55
+A0051
+Cold Brew Coffee
+5.59
+38
+A0052
+Vitamin Water
+2.99
+70
+A0053
+Matcha Latte
+7.49
+19
+A0054
+Café Bustelo
+4.79
+35
+A0055
+Chai Latte
+5.99
+26
+A0056
+Luzianne Tea
+3.29
+60
+A0057
+Pineapple Juice
+2.79
+80
+A0058
+Mango Juice
+3.99
+57
+A0059
+Fruit Punch
+4.29
+65
+A0060
+Lemon Tea
+3.49
+50
+A0061
+Green Tea
+4.19
+61
+A0062
+Ginger Lemonade
+3.59
+42
+A0063
+Raspberry Tea
+4.49
+18
+A0064
+Blackberry Lemon
+5.99
+23
+A0065
+Matcha Tea
+5.49
+33
+A0066
+Cherry Coke
+8.99
+14
+A0067
+Orange Fanta
+6.29
+41
+A0068
+Strawberry Lemonade
+3.69
+52
+A0069
+Mango Smoothie
+7.89
+22
+A0070
+Blueberry Smoothie
+6.49
+29
+A0071
+Strawberry Kiwi
+5.79
+50
+A0072
+Pomegranate Juice
+6.19
+35
+A0073
+Watermelon Juice
+5.49
+36
+A0074
+Acai Berry Juice
+6.89
+23
+A0075
+Apple Cider
+4.69
+42
+A0076
+Cucumber Water
+3.79
+68
+A0077
+Cucumber Lemon Water
+5.29
+25
+A0078
+Green Apple Juice
+6.19
+29
+A0079
+Passionfruit Juice
+7.69
+14
+A0080
+Papaya Juice
+6.79
+16
+A0081
+Guava Juice
+7.99
+12
+A0082
+Apricot Nectar
+4.49
+33
+A0083
+Plum Juice
+4.79
+27
+A0084
+Tomato Juice
+5.39
+19
+A0085
+Banana Smoothie
+8.49
+18
+A0086
+Kiwi Smoothie
+7.99
+23
+A0087
+Peach Mango Smoothie
+7.49
+20
+A0089
+Cantaloupe Juice
+5.99
+24
+A0090
+Tangerine Juice
+6.49
+28
+A0091
+Coconut Mango Smoothie
+6.99
+21
+A0092
+Ginger Peach Tea
+5.19
+48
+A0093
+Cranberry Apple Juice
+4.99
+37
+A0094
+Strawberry Orange
+5.79
+29
+A0095
+Grape Juice
+4.39
+53
+A0096
+Raspberry Lemonade
+4.99
+25
+A0097
+Lemon Lime Drink
+6.29
+22
+A0098
+Pink Lemonade
+3.99
+61
+A0099
+Coconut Water
+2.59
+75
+A0100
+Hibiscus Tea
+4.79
+34
+A0103
+Sparkle
+24.00
+121
